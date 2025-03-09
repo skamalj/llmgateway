@@ -30,7 +30,7 @@ Resources:
       Enabled: true
       StageKeys:
         - RestApiId: !Ref LLMApi
-          StageName: "prod"
+          StageName: "Prod"
 
   # Usage Plan
   LLMUsagePlan:
@@ -39,7 +39,7 @@ Resources:
       UsagePlanName: "LLMProviderUsagePlan"
       ApiStages:
         - ApiId: !Ref LLMApi
-          Stage: !Ref "prod"
+          Stage: !Ref LLMStage
       Throttle:
         RateLimit: 10
         BurstLimit: 20
@@ -150,7 +150,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       RestApiId: !Ref LLMApi
-      StageName: "prod"
+      StageName: "Prod"
       DeploymentId: !Ref LLMDeployment
     DependsOn:
       - OpenAIMethod
