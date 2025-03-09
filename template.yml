@@ -26,6 +26,8 @@ Resources:
   LLMApiKey:
     Type: AWS::ApiGateway::ApiKey
     Properties:
+      DependsOn:
+        - LLMStage
       Name: LLMApiKey
       Enabled: true
       StageKeys:
@@ -150,7 +152,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       RestApiId: !Ref LLMApi
-      StageName: "Prod"
+      StageName: "prod"
       DeploymentId: !Ref LLMDeployment
     DependsOn:
       - OpenAIMethod
