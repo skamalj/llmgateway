@@ -25,9 +25,9 @@ Resources:
   # API Key
   LLMApiKey:
     Type: AWS::ApiGateway::ApiKey
+    DependsOn:
+      - LLMStage
     Properties:
-      DependsOn:
-        - LLMStage
       Name: LLMApiKey
       Enabled: true
       StageKeys:
