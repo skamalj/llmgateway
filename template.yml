@@ -46,7 +46,13 @@ Resources:
       Quota:
         Limit: 1000
         Period: MONTH
-      ApiKeyId: !Ref LLMApiKey
+
+  UsagePlanKey:
+    Type: 'AWS::ApiGateway::UsagePlanKey'
+    Properties:
+      KeyId: !Ref LLMApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref LLMUsagePlan
 
   # OpenAI Resource
   OpenAIResource:
