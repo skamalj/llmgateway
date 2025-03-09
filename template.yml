@@ -39,7 +39,7 @@ Resources:
       UsagePlanName: "LLMProviderUsagePlan"
       ApiStages:
         - ApiId: !Ref LLMApi
-          Stage: "prod"
+          Stage: !Ref "prod"
       Throttle:
         RateLimit: 10
         BurstLimit: 20
