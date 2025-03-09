@@ -8,6 +8,9 @@ Parameters:
   AnthropicSecretName:
     Type: String
     Default: "AnthropicAPIKey"
+  GoogleSecretName:
+    Type: String
+    Default: "GeminiAPIKey"
 
 Resources:
   # API Gateway
@@ -34,6 +37,14 @@ Resources:
       RestApiId: !Ref LLMApi
       ParentId: !GetAtt LLMApi.RootResourceId
       PathPart: "anthropic"
+  
+  # Gemini Resource
+  GoogleResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !GetAtt LLMApi.RootResourceId
+      PathPart: "google"
 
   # OpenAI Method
   OpenAIMethod:
@@ -75,6 +86,26 @@ Resources:
           integration.request.header.Authorization: !Sub "'{{resolve:secretsmanager:${AnthropicSecretName}}}'"
         PassthroughBehavior: WHEN_NO_MATCH
 
+
+  GoogleMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref LLMApi
+      ResourceId: !Ref GoogleResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      RequestParameters:
+        method.request.header.Authorization: true
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: HTTP_PROXY
+        Uri: "https://generativelanguage.googleapis.com/v1"
+        IntegrationResponses:
+          - StatusCode: 200
+        RequestParameters:
+          integration.request.header.Authorization: !Sub "'{{resolve:secretsmanager:${GoogleSecretName}}}'"
+        PassthroughBehavior: WHEN_NO_MATCH
+
   # API Gateway Deployment
   LLMDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -83,6 +114,7 @@ Resources:
     DependsOn:
       - OpenAIMethod
       - AnthropicMethod
+      - GoogleMethod
 
   # API Gateway Stage with AutoDeploy
   LLMStage:
@@ -94,6 +126,7 @@ Resources:
     DependsOn:
       - OpenAIMethod
       - AnthropicMethod
+      - GoogleMethod
 
   # IAM Role for API Gateway to access Secrets Manager
   APIGatewayIAMRole:
@@ -118,6 +151,8 @@ Resources:
                 Resource: 
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${OpenAISecretName}-*"
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${AnthropicSecretName}-*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${GoogleSecretName}-*"
+
 
 Outputs:
   ApiGatewayInvokeURL:
