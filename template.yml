@@ -53,6 +53,7 @@ Resources:
       RestApiId: !Ref LLMApi
       ResourceId: !Ref OpenAIResource
       HttpMethod: POST
+      ApiKeyRequired: True
       AuthorizationType: NONE
       RequestParameters:
         method.request.header.Authorization: true
@@ -73,6 +74,7 @@ Resources:
       RestApiId: !Ref LLMApi
       ResourceId: !Ref AnthropicResource
       HttpMethod: POST
+      ApiKeyRequired: True
       AuthorizationType: NONE
       RequestParameters:
         method.request.header.Authorization: true
@@ -93,6 +95,7 @@ Resources:
       RestApiId: !Ref LLMApi
       ResourceId: !Ref GoogleResource
       HttpMethod: POST
+      ApiKeyRequired: True
       AuthorizationType: NONE
       RequestParameters:
         method.request.header.Authorization: true
