@@ -32,7 +32,7 @@ Resources:
       Enabled: true
       StageKeys:
         - RestApiId: !Ref LLMApi
-          StageName: "Prod"
+          StageName: "prod"
 
   # Usage Plan
   LLMUsagePlan:
