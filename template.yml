@@ -65,11 +65,11 @@ Resources:
       PathPart: "openai/{proxy+}"
   
   OpenAIProxyResource:
-  Type: AWS::ApiGateway::Resource
-  Properties:
-    RestApiId: !Ref LLMApi
-    ParentId: !Ref OpenAIResource
-    PathPart: "{proxy+}"
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !Ref OpenAIResource
+      PathPart: "{proxy+}"
 
 
   # Anthropic Resource
@@ -106,24 +106,6 @@ Resources:
         RequestParameters:
           integration.request.header.Authorization: !Sub "'Bearer {{resolve:secretsmanager:${OpenAISecretName}}}'"
         PassthroughBehavior: 
-        
-    OpenAIDummyMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref LLMApi
-      ResourceId: !Ref OpenAIResource
-      HttpMethod: POST
-      ApiKeyRequired: True
-      AuthorizationType: NONE
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: HTTP_PROXY
-        Uri: "https://api.openai.com/v1/chat/completions"
-        IntegrationResponses:
-          - StatusCode: 200
-        RequestParameters:
-          integration.request.header.Authorization: !Sub "'Bearer {{resolve:secretsmanager:${OpenAISecretName}}}'"
-        PassthroughBehavior: WHEN_NO_MATCH
 
   # Anthropic Method
   AnthropicMethod:
