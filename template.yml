@@ -256,18 +256,10 @@ Resources:
                 - apigateway.amazonaws.com
             Action: 
               - sts:AssumeRole
-      Policies:
-        - PolicyName: ApiGatewayLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-  
+      ManagedPolicyArns:
+      - >-
+        arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+
   Account:
     Type: AWS::ApiGateway::Account
     Properties:
