@@ -62,7 +62,7 @@ Resources:
     Properties:
       RestApiId: !Ref LLMApi
       ParentId: !GetAtt LLMApi.RootResourceId
-      PathPart: "openai"
+      PathPart: "openai/{proxy+}"
 
   # Anthropic Resource
   AnthropicResource:
