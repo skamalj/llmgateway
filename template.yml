@@ -2,15 +2,23 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 
 Parameters:
-  OpenAISecretName:
+  
+  RateLimit:
+    Type: Number
+    Default: 10
+    Description: "Requests per second limit"
+  BurstLimit:
+    Type: Number
+    Default: 20
+    Description: "Maximum burst requests"
+  QuotaLimit:
+    Type: Number
+    Default: 1000
+    Description: "Maximum requests per month"
+  QuotaPeriod:
     Type: String
-    Default: "OpenAIAPIKey"
-  AnthropicSecretName:
-    Type: String
-    Default: "AnthropicAPIKey"
-  GoogleSecretName:
-    Type: String
-    Default: "GeminiAPIKey"
+    Default: Week
+    Description: "Number of requests per Period"
 
 Resources:
   # API Gateway
@@ -43,11 +51,11 @@ Resources:
         - ApiId: !Ref LLMApi
           Stage: !Ref LLMStage
       Throttle:
-        RateLimit: 10
-        BurstLimit: 20
+        RateLimit: !Ref RateLimit
+        BurstLimit: !Ref BurstLimit
       Quota:
-        Limit: 1000
-        Period: MONTH
+        Limit: !Ref QuotaLimit
+        Period: !Ref QuotaPeriod
 
   UsagePlanKey:
     Type: 'AWS::ApiGateway::UsagePlanKey'
@@ -79,6 +87,13 @@ Resources:
       RestApiId: !Ref LLMApi
       ParentId: !GetAtt LLMApi.RootResourceId
       PathPart: "anthropic"
+
+  AnthropicProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !Ref AnthropicResource
+      PathPart: "{proxy+}"
   
   # Gemini Resource
   GoogleResource:
@@ -87,6 +102,13 @@ Resources:
       RestApiId: !Ref LLMApi
       ParentId: !GetAtt LLMApi.RootResourceId
       PathPart: "google"
+
+  GoogleModelResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !Ref GoogleResource
+      PathPart: "{model+}"
 
   # OpenAI Method
   OpenAIMethod:
@@ -103,8 +125,6 @@ Resources:
         Uri: "https://api.openai.com/v1/chat/completions"
         IntegrationResponses:
           - StatusCode: 200
-        RequestParameters:
-          integration.request.header.Authorization: !Sub "'Bearer {{resolve:secretsmanager:${OpenAISecretName}}}'"
         PassthroughBehavior: WHEN_NO_MATCH
 
   # Anthropic Method
@@ -112,7 +132,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref LLMApi
-      ResourceId: !Ref AnthropicResource
+      ResourceId: !Ref AnthropicProxyResource
       HttpMethod: POST
       ApiKeyRequired: True
       AuthorizationType: NONE
@@ -122,8 +142,6 @@ Resources:
         Uri: "https://api.anthropic.com/v1/messages"
         IntegrationResponses:
           - StatusCode: 200
-        RequestParameters:
-          integration.request.header.Authorization: !Sub "'{{resolve:secretsmanager:${AnthropicSecretName}}}'"
         PassthroughBehavior: WHEN_NO_MATCH
 
   # Google Method
@@ -131,18 +149,16 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref LLMApi
-      ResourceId: !Ref GoogleResource
+      ResourceId: !Ref GoogleModelResource
       HttpMethod: POST
       ApiKeyRequired: True
       AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
         Type: HTTP_PROXY
-        Uri: "https://generativelanguage.googleapis.com/v1"
+        Uri: "https://generativelanguage.googleapis.com/v1beta/models/{model}"
         IntegrationResponses:
           - StatusCode: 200
-        RequestParameters:
-          integration.request.header.Authorization: !Sub "'{{resolve:secretsmanager:${GoogleSecretName}}}'"
         PassthroughBehavior: WHEN_NO_MATCH
 
   # API Gateway Deployment
@@ -166,31 +182,6 @@ Resources:
       - OpenAIMethod
       - AnthropicMethod
       - GoogleMethod
-
-  # IAM Role for API Gateway to access Secrets Manager
-  APIGatewayIAMRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: APIGatewaySecretsRole
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-            Action: "sts:AssumeRole"
-      Policies:
-        - PolicyName: APIGatewaySecretsPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource: 
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${OpenAISecretName}-*"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${AnthropicSecretName}-*"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${GoogleSecretName}-*"
 
 Outputs:
   ApiGatewayInvokeURL:
