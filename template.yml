@@ -217,20 +217,6 @@ Resources:
       RestApiId: !Ref LLMApi
       StageName: "prod"
       DeploymentId: !Ref LLMDeployment
-      AccessLogSetting:
-        DestinationArn: !GetAtt LLMApiGatewayLogGroup.Arn
-        Format: >
-          {
-            "requestId": "$context.requestId",
-            "ip": "$context.identity.sourceIp",
-            "userAgent": "$context.identity.userAgent",
-            "requestTime": "$context.requestTime",
-            "httpMethod": "$context.httpMethod",
-            "resourcePath": "$context.resourcePath",
-            "status": "$context.status",
-            "protocol": "$context.protocol",
-            "responseLength": "$context.responseLength"
-          }
       MethodSettings:
         - ResourcePath: "/*"
           HttpMethod: "*"
