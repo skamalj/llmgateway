@@ -17,8 +17,8 @@ Parameters:
     Description: "Maximum requests per month"
   QuotaPeriod:
     Type: String
-    Default: Week
-    Description: "Number of requests per Period"
+    Default: WEEK
+    Description: "Number of requests per Period - DAY | WEEK | MONTH"
 
 Resources:
   # API Gateway
