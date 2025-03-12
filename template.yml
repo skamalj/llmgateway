@@ -105,7 +105,7 @@ Resources:
           - StatusCode: 200
         RequestParameters:
           integration.request.header.Authorization: !Sub "'Bearer {{resolve:secretsmanager:${OpenAISecretName}}}'"
-        PassthroughBehavior: 
+        PassthroughBehavior: WHEN_NO_MATCH
 
   # Anthropic Method
   AnthropicMethod:
