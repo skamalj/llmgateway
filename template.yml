@@ -209,7 +209,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/apigateway/${LLMApi}"
       RetentionInDays: 7  # Adjust retention period as needed
-      
+
   # API Gateway Stage with AutoDeploy
   LLMStage:
     Type: AWS::ApiGateway::Stage
@@ -242,6 +242,7 @@ Resources:
       - OpenAIMethod
       - AnthropicMethod
       - GoogleMethod
+      - Account
   
   ApiGatewayLoggingRole:
     Type: AWS::IAM::Role
@@ -266,7 +267,11 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "*"
-
+  
+  Account:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt ApiGatewayLoggingRole.Arn
 
 Outputs:
   ApiGatewayInvokeURL:
