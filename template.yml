@@ -63,6 +63,14 @@ Resources:
       RestApiId: !Ref LLMApi
       ParentId: !GetAtt LLMApi.RootResourceId
       PathPart: "openai/{proxy+}"
+  
+  OpenAIProxyResource:
+  Type: AWS::ApiGateway::Resource
+  Properties:
+    RestApiId: !Ref LLMApi
+    ParentId: !Ref OpenAIResource
+    PathPart: "{proxy+}"
+
 
   # Anthropic Resource
   AnthropicResource:
@@ -85,7 +93,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref LLMApi
-      ResourceId: !Ref OpenAIResource
+      ResourceId: !Ref OpenAIProxyResource
       HttpMethod: POST
       ApiKeyRequired: True
       AuthorizationType: NONE
