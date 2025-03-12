@@ -204,6 +204,12 @@ Resources:
       - AnthropicMethod
       - GoogleMethod
 
+  LLMApiGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${LLMApi}"
+      RetentionInDays: 7  # Adjust retention period as needed
+      
   # API Gateway Stage with AutoDeploy
   LLMStage:
     Type: AWS::ApiGateway::Stage
@@ -211,10 +217,56 @@ Resources:
       RestApiId: !Ref LLMApi
       StageName: "prod"
       DeploymentId: !Ref LLMDeployment
+      AccessLogSetting:
+        DestinationArn: !GetAtt LLMApiGatewayLogGroup.Arn
+        Format: >
+          {
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "userAgent": "$context.identity.userAgent",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "resourcePath": "$context.resourcePath",
+            "status": "$context.status",
+            "protocol": "$context.protocol",
+            "responseLength": "$context.responseLength"
+          }
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: "INFO"  # Set to INFO or ERROR
+          DataTraceEnabled: true  # Logs request/response payloads
+          MetricsEnabled: true  # Enables CloudWatch metrics
+
     DependsOn:
       - OpenAIMethod
       - AnthropicMethod
       - GoogleMethod
+  
+  ApiGatewayLoggingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - apigateway.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: ApiGatewayLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
 
 Outputs:
   ApiGatewayInvokeURL:
