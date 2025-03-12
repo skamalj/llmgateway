@@ -125,6 +125,39 @@ Resources:
         Uri: "https://api.openai.com/v1/chat/completions"
         IntegrationResponses:
           - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                {
+                  "statusCode": 200,
+                  "body": $input.body
+                }
+          - StatusCode: 400
+            SelectionPattern: ".*InvalidRequestError.*"
+            ResponseTemplates:
+              application/json: |
+                {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "$input.path('$.error.message')"
+                }
+          - StatusCode: 401
+            SelectionPattern: ".*AuthenticationError.*"
+            ResponseTemplates:
+              application/json: |
+                {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "$input.path('$.error.message')"
+                }
+          - StatusCode: 500
+            SelectionPattern: ".*ServerError.*"
+            ResponseTemplates:
+              application/json: |
+                {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "An error occurred while processing your request."
+                }
         PassthroughBehavior: WHEN_NO_MATCH
 
   # Anthropic Method

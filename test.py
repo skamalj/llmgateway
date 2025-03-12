@@ -11,7 +11,7 @@ llm = ChatGoogleGenerativeAI(
     max_tokens=None,
     timeout=None,
     max_retries=2,
-    base_url="https://generativelanguage.googleapis.com/v1"
+    base_url="https://generativelanguage.googleapis.com/v1beta"
 )
 
 messages = [
