@@ -33,8 +33,8 @@ jobs:
       - name: Retrieve API Key and Store in Secrets Manager
         run: |
           API_KEY_ID=$(aws cloudformation describe-stacks \
-            --stack-name my-stack-name \
-            --query "Stacks[0].Outputs[?OutputKey=='LLMApiKey'].OutputValue" \
+            --stack-name  llm-router-new2-stack \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiKey'].OutputValue" \
             --output text)
 
           API_KEY_VALUE=$(aws apigateway get-api-key \
@@ -46,3 +46,15 @@ jobs:
           aws secretsmanager put-secret-value \
             --secret-id LLMGWApiKeySecret \
             --secret-string "$API_KEY_VALUE"
+      - name: Retrieve Lambda Function URL and Store in Secrets Manager
+        run: |
+          # Get Lambda Function Name from CloudFormation Output
+          FUNCTION_URL=$(aws cloudformation describe-stacks \
+            --stack-name llm-router-new2-stack \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayInvokeURL'].OutputValue" \
+            --output text)
+
+          # Store Lambda Function URL in Secrets Manager
+          aws secretsmanager put-secret-value \
+            --secret-id LLMFunctionUrlSecret \
+            --secret-string "$FUNCTION_URL"
