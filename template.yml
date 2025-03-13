@@ -171,6 +171,8 @@ Resources:
       AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
+        RequestParameters:
+          integration.request.header.x-api-key: method.request.header.anthropic-api-key
         Type: HTTP_PROXY
         Uri: "https://api.anthropic.com/v1/messages"
         IntegrationResponses:
