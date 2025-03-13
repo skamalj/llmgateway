@@ -29,6 +29,9 @@ jobs:
 
       - name: Deploy SAM application
         run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      
+      - name: Wait for Stack to commit
+        run: sleep 15
 
       - name: Retrieve API Key and Store in Secrets Manager
         run: |
@@ -46,6 +49,7 @@ jobs:
           aws secretsmanager put-secret-value \
             --secret-id LLMGWApiKeySecret \
             --secret-string "$API_KEY_VALUE"
+
       - name: Retrieve Lambda Function URL and Store in Secrets Manager
         run: |
           # Get Lambda Function Name from CloudFormation Output
