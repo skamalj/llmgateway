@@ -2,18 +2,47 @@ on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: aws-actions/setup-sam@v2
-      - uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
-      - run: sam build --use-container
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+
+      - name: Build SAM application
+        run: sam build --use-container
+
+      - name: Deploy SAM application
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+
+      - name: Retrieve API Key and Store in Secrets Manager
+        run: |
+          API_KEY_ID=$(aws cloudformation describe-stacks \
+            --stack-name my-stack-name \
+            --query "Stacks[0].Outputs[?OutputKey=='LLMApiKey'].OutputValue" \
+            --output text)
+
+          API_KEY_VALUE=$(aws apigateway get-api-key \
+            --api-key $API_KEY_ID \
+            --include-value \
+            --query "value" \
+            --output text)
+
+          aws secretsmanager put-secret-value \
+            --secret-id LLMGWApiKeySecret \
+            --secret-string "$API_KEY_VALUE"
