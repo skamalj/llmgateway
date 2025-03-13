@@ -167,6 +167,8 @@ Resources:
       RestApiId: !Ref LLMApi
       ResourceId: !Ref AnthropicProxyResource
       HttpMethod: POST
+      RequestParameters:
+        method.request.header.anthropic-api-key: True
       ApiKeyRequired: True
       AuthorizationType: NONE
       Integration:
