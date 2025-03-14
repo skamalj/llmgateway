@@ -214,7 +214,7 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
   
   # Bedrock Method
-  BedrockModelMethod:
+  BedrockMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref LLMApi
@@ -239,6 +239,7 @@ Resources:
       - OpenAIMethod
       - AnthropicMethod
       - GoogleMethod
+      - BedrockMethod
 
   LLMApiGatewayLogGroup:
     Type: AWS::Logs::LogGroup
@@ -264,6 +265,7 @@ Resources:
       - OpenAIMethod
       - AnthropicMethod
       - GoogleMethod
+      - BedrockMethod
       - Account
   
   ApiGatewayLoggingRole:

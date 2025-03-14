@@ -6,6 +6,12 @@ if "GOOGLE_API_KEY" not in os.environ:
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_aws import ChatBedrockConverse
 
+class FlexibleChatBedrockConverse(ChatBedrockConverse):
+    """This model allows extra fields by overriding Config."""
+    
+    class Config:
+        extra = 'allow'  # Override to allow extra fields
+
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
     temperature=0,
@@ -15,9 +21,9 @@ llm = ChatGoogleGenerativeAI(
     base_url="https://generativelanguage.googleapis.com/v1beta"
 )
 
-llm_bedrock = ChatBedrockConverse(model="meta.llama3-8b-instruct-v1:0",
+llm_bedrock = FlexibleChatBedrockConverse(model="meta.llama3-8b-instruct-v1:0",
     temperature=0,
-    max_tokens=None,)
+    max_tokens=None, endpoint_url="https://sqadvwv298.execute-api.ap-south-1.amazonaws.com/prod", default_headers={"x-api-key": "Db8vtJNyF03V3Ey4Lk7sN1o3mRfbbDsoaxFbs6RY"})
 
 messages = [
     (
