@@ -110,6 +110,21 @@ Resources:
       ParentId: !Ref GoogleResource
       PathPart: "{model+}"
 
+# OpenAI Resource
+  BedrockResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !GetAtt LLMApi.RootResourceId
+      PathPart: "bedrock"
+  
+  BedrockModelResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LLMApi
+      ParentId: !Ref BedrockResource
+      PathPart: "{model+}"
+
   # OpenAI Method
   OpenAIMethod:
     Type: AWS::ApiGateway::Method
@@ -194,6 +209,23 @@ Resources:
         IntegrationHttpMethod: POST
         Type: HTTP_PROXY
         Uri: "https://generativelanguage.googleapis.com/v1beta/models/{model}"
+        IntegrationResponses:
+          - StatusCode: 200
+        PassthroughBehavior: WHEN_NO_MATCH
+  
+  # Bedrock Method
+  BedrockModelMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref LLMApi
+      ResourceId: !Ref BedrockModelResource
+      HttpMethod: POST
+      ApiKeyRequired: True
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: HTTP_PROXY
+        Uri: "https://bedrock-runtime.ap-south-1.amazonaws.com/{model}"
         IntegrationResponses:
           - StatusCode: 200
         PassthroughBehavior: WHEN_NO_MATCH
